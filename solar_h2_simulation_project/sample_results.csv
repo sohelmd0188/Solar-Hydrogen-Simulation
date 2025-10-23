@@ -1,0 +1,9 @@
+metric,value
+mH2_annual_kg,208800.0
+E_el_annual_kWh,8699130.0
+Pel_rated_kW,4766.646575342465
+PV_capacity_MWp,5.9583082191780825
+H2_rate_kgph,114.41095890410959
+storage_kg,700.0
+storage_m3,30.3030303030303
+CAPEX_USD,9630794.657534245
