@@ -166,6 +166,124 @@ with col2:
     plt.tight_layout()
     st.pyplot(fig)
 
+    # =========================================================
+# 🌍 Monthly CO₂ Mitigation & Cost-Profit Analysis Section
+# =========================================================
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+st.markdown("## 🌿 Monthly CO₂ Mitigation & Cost–Profit Analysis")
+
+months = [
+    "Apr'24", "May'24", "Jun'24", "Jul'24", "Aug'24",
+    "Sep'24", "Oct'24", "Nov'24", "Dec'24",
+    "Jan'25", "Feb'25", "Mar'25", "Apr'25"
+]
+
+# Input block
+selected_month = st.selectbox("Select Month", months)
+
+# Dummy data
+grid_import_mwh = [0, 37.0, 0, 14.5, 0, 34.0, 22.0, 7.0, 0, 0, 0, 0, 29.5]
+grid_export_mwh = [8.0, 0, 2.0, 0, 33.5, 0, 0, 0, 33.5, 48.5, 41.0, 15.5, 0]
+diesel_reduction = [112560] * 13
+factor = 710  # kg CO₂/MWh
+
+grid_export_reduction = [val * factor for val in grid_export_mwh]
+grid_import_emissions = [val * factor for val in grid_import_mwh]
+total_mitigation = (
+    np.array(diesel_reduction) + np.array(grid_export_reduction) - np.array(grid_import_emissions)
+)
+
+i = months.index(selected_month)
+diesel = diesel_reduction[i]
+export_red = grid_export_reduction[i]
+import_em = grid_import_emissions[i]
+total = total_mitigation[i]
+
+fig1, ax1 = plt.subplots(figsize=(9, 6))
+categories = ["Diesel Reduction", "Grid Export Reduction", "Grid Import Emission"]
+values = [diesel, export_red, -import_em]
+colors = ["#3b82f6", "#22c55e", "#ef4444"]
+
+# Bars
+bars = ax1.bar(categories, values, color=colors, edgecolor='black', alpha=0.85)
+
+# Add value labels on each bar
+for bar, val in zip(bars, values):
+    ax1.text(
+        bar.get_x() + bar.get_width()/2,
+        val + (0.02 * max(values + [total])),  # slight offset
+        f"{val/1000:.1f}K",
+        ha='center', va='bottom',
+        fontsize=12, fontweight='bold',
+        color='black'
+    )
+
+fig1, ax1 = plt.subplots(figsize=(9, 6))
+
+# Categories & Data
+categories = ["Diesel Reduction", "Grid Export Reduction", "Grid Import Emission"]
+values = [diesel, export_red, -import_em]
+colors = ["#3b82f6", "#22c55e", "#ef4444"]
+
+# Bars
+bars = ax1.bar(categories, values, color=colors, edgecolor='black', alpha=0.85)
+
+# === Add Value Labels Clearly ===
+for bar, val in zip(bars, values):
+    # Position text above positive bars and below negative bars
+    y_pos = val + (0.05 * max(values)) if val >= 0 else val - (0.08 * abs(min(values)))
+    va = 'bottom' if val >= 0 else 'top'
+
+    ax1.text(
+        bar.get_x() + bar.get_width()/2,
+        y_pos,
+        f"{val/1000:.1f}K",
+        ha='center', va=va,
+        fontsize=13, fontweight='bold',
+        color='black'
+    )
+
+# === Total Mitigation Line & Label ===
+ax1.axhline(total, color='black', linestyle='--', linewidth=3, label="Total Mitigation")
+
+# Keep label always visible slightly above line
+y_label = total + (0.06 * max(values))
+ax1.text(
+    1.5, y_label,
+    f"Total Mitigation: {total/1000:.1f}K kg CO₂",
+    ha='center', va='bottom',
+    fontsize=11, fontweight='bold', color='black'
+)
+
+# === Titles & Styling ===
+ax1.set_title(f"CO₂ Mitigation – {selected_month}", fontsize=18, fontweight='bold')
+ax1.set_ylabel("CO₂ (kg)", fontsize=14)
+ax1.grid(alpha=0.3)
+ax1.legend()
+
+# Add a small padding for better label visibility
+ax1.set_ylim(min(values) * 1.3, max(values + [total]) * 1.3)
+
+st.pyplot(fig1)
+
+
+# Cost-Profit Table (Dummy values)
+cost_profit_data = {
+    "Month": months,
+    "Hydrogen Produced (kg)": [17000, 16800, 17500, 17200, 17800, 17600, 16900, 17300, 17100, 16500, 16400, 16800, 17400],
+    "Grid Import (MWh)": grid_import_mwh,
+    "Grid Export (MWh)": grid_export_mwh,
+    "Cost (USD)": [1200, 1350, 1180, 1220, 1250, 1400, 1300, 1190, 1210, 1150, 1120, 1180, 1270],
+    "Profit (USD)": [1800, 1500, 1900, 1700, 2000, 1600, 1750, 1800, 2100, 1950, 1850, 2000, 2050]
+}
+df_cost = pd.DataFrame(cost_profit_data)
+st.markdown("### 💰 Monthly Cost–Profit Summary")
+st.dataframe(df_cost)
+
+
 # Monte-Carlo quick
 if run_monte:
     st.markdown("### Monte-Carlo LCOH (quick)")
@@ -190,6 +308,92 @@ if run_monte:
     mc_df = pd.DataFrame({"LCOH_USD_per_kg": lcoh_arr})
     csv_bytes = mc_df.to_csv(index=False).encode('utf-8')
     st.download_button("Download Monte-Carlo LCOH CSV", data=csv_bytes, file_name="montecarlo_lcoh.csv", mime="text/csv")
+
+
+    # =========================================================
+# ⚡ Energy Management Simulation (EMS)
+# =========================================================
+st.markdown("## ⚙️ Energy Management Simulation (EMS)")
+
+if st.checkbox("Run EMS Simulation"):
+    months_ems = ["Apr-24","May-24","Jun-24","Jul-24","Aug-24","Sep-24",
+                  "Oct-24","Nov-24","Dec-24","Jan-25","Feb-25","Mar-25","Apr-25"]
+    selected_ems = st.selectbox("Select Month for EMS", months_ems)
+
+    # 🔹 EMS core calculation (simplified from your provided code)
+    import numpy as np
+    PV_kW = 6250; PSH = 5; DERATING = 0.8
+    ELECTROLYZER_RATED = 5000; ELECTROLYZER_EFF = 0.80
+    FC_CAPACITY = 2000; FC_EFF = 0.50; LHV_H2 = 33.33
+    MAX_STORAGE_KG = 700; RESERVE_KG = 200; CRITICAL_KG = 100
+    days = 30
+    hours = days * 24
+
+    SOLAR_PATTERN = np.array([0,0,0,0,0,500,2500,4500,6000,6250,6000,4500,3000,2000,1000,300,0,0,0,0,0,0,0,0])
+    LOAD_PATTERN  = np.array([1800,1600,1400,1300,1500,2000,2800,3200,3500,3300,3100,2900,2700,2500,2400,2300,2200,2100,2000,1900,1800,1800,1800,1800])
+    solar = np.tile(SOLAR_PATTERN, days)
+    load = np.tile(LOAD_PATTERN, days)
+    solar = solar.astype(float)
+    solar *= (PV_kW * PSH * DERATING * days) / np.sum(solar)
+
+
+    H2 = 540 * LHV_H2
+    H2_series, ELZ_series, FC_series, Gimp_series, Gexp_series = [], [], [], [], []
+
+    for t in range(hours):
+        pv = solar[t]; ld = load[t]
+        elz = fc = gimp = gexp = 0
+        if pv >= ld:
+            surplus = pv - ld
+            elz = min(surplus, ELECTROLYZER_RATED)
+            H2 += elz * ELECTROLYZER_EFF
+            if H2 > MAX_STORAGE_KG * LHV_H2:
+                H2 = MAX_STORAGE_KG * LHV_H2
+            if surplus - elz > 100:
+                gexp = surplus - elz
+        else:
+            deficit = ld - pv
+            if H2 > RESERVE_KG * LHV_H2:
+                fc = min(deficit, FC_CAPACITY)
+                H2 -= fc / FC_EFF
+                deficit -= fc
+            if deficit > 0:
+                gimp = deficit
+
+        ELZ_series.append(elz); FC_series.append(fc)
+        Gimp_series.append(gimp); Gexp_series.append(gexp)
+        H2_series.append(H2 / LHV_H2)
+
+    time = np.arange(hours)
+
+    # Plot 1: PV vs Load
+    fig_pv, ax_pv = plt.subplots(figsize=(10, 4))
+    ax_pv.plot(time, solar, color="orange", label="PV Generation (kW)")
+    ax_pv.plot(time, load, color="blue", label="Load (kW)")
+    ax_pv.set_title(f"{selected_ems}: PV vs Load", fontweight='bold')
+    ax_pv.legend(); ax_pv.grid(alpha=0.3)
+    st.pyplot(fig_pv)
+
+    # Plot 2: EMS Dispatch
+    fig_ems, ax_ems = plt.subplots(figsize=(10, 4))
+    ax_ems.plot(time, ELZ_series, label="Electrolyzer (kW)", color="green")
+    ax_ems.plot(time, FC_series, label="Fuel Cell (kW)", color="red")
+    ax_ems.plot(time, Gimp_series, label="Grid Import (kW)", color="purple")
+    ax_ems.plot(time, Gexp_series, label="Grid Export (kW)", color="cyan")
+    ax_ems.set_title(f"{selected_ems}: EMS Dispatch", fontweight='bold')
+    ax_ems.legend(); ax_ems.grid(alpha=0.3)
+    st.pyplot(fig_ems)
+
+    # Plot 3: H₂ Storage Dynamics
+    fig_h2, ax_h2 = plt.subplots(figsize=(10, 4))
+    ax_h2.plot(time, H2_series, color="darkgreen", linewidth=2, label="H₂ Storage (kg)")
+    ax_h2.axhline(MAX_STORAGE_KG, color="red", linestyle="--", label="Max 700 kg")
+    ax_h2.axhline(RESERVE_KG, color="orange", linestyle="--", label="Reserve 200 kg")
+    ax_h2.axhline(CRITICAL_KG, color="brown", linestyle="--", label="Critical 100 kg")
+    ax_h2.set_title(f"{selected_ems}: Hydrogen Storage Dynamics", fontweight='bold')
+    ax_h2.legend(); ax_h2.grid(alpha=0.3)
+    st.pyplot(fig_h2)
+
 
 st.markdown("---")
 st.markdown("Generated project: Solar–Hydrogen Simulation. Ensure required packages installed: streamlit, numpy, pandas, matplotlib.")
