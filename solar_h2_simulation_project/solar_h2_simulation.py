@@ -78,7 +78,7 @@ storage_kg = st.sidebar.number_input("H₂ Storage Capacity (kg)", min_value=0, 
 st.sidebar.markdown("### Economic Parameters")
 elec_capex = st.sidebar.number_input("Electrolyzer CAPEX (USD/kW)", min_value=100, max_value=5000, value=1400, step=10)
 pv_capex = st.sidebar.number_input("PV CAPEX (USD/kW)", min_value=100, max_value=5000, value=700, step=10)
-fc_capex = st.sidebar.number_input( "Fuel Cell CAPEX (USD/kW)", min_value=100,max_value=5000,value=1200,step=50)
+fc_capex = st.sidebar.number_input( "Fuel Cell CAPEX (USD/kW)", min_value=100,max_value=5000,value=850,step=50)
 storage_capex = st.sidebar.number_input("Storage CAPEX (USD/kg)", min_value=10, max_value=2000, value=650, step=10)
 OPEX = st.sidebar.number_input("Annual OPEX (USD/yr)", min_value=0, max_value=1_000_000, value=60000, step=1000)
 revenue = st.sidebar.number_input("Byproduct Revenue (USD/yr)", min_value=0, max_value=1_000_000, value=160000, step=1000)
@@ -159,7 +159,7 @@ with col2:
     st.pyplot(fig)
 
 
-=======
+
     annual_cashflow = revenue - OPEX
     r_vals = np.linspace(0.03, 0.15, 20)
     npv_vals = [NPV_simple(annual_cashflow, CAPEX_total, rv, int(n)) for rv in r_vals]
